@@ -1,7 +1,8 @@
 {
   "dependencies": {
     "discord.js": "^14.20.0",
-    "dotenv": "^16.5.0"
+    "dotenv": "^16.5.0",
+    "sqlite3": "^5.1.7"
   },
   "name": "project-db3",
   "version": "1.0.0",

@@ -16,11 +16,20 @@ module.exports = {
 	    try {
 		    await command.execute(interaction);
 	    } catch (error) {
-		    console.error(error);
+		    console.error(`Erreur avec la commande ${interaction.commandName}:`, error);
+
+			const errorEmbed = new EmbedBuilder()
+			    .setTitle('❌ Erreur')
+				.setDescription('Une erreur est survenue lors de l\'exécution de la commande.')
+				.setColor('#ff0000')
+				.setTimestamp();
+
+			const reply = { embeds: [errorEmbed], flags: MessageFlags.Ephemeral };
+
 		    if (interaction.replied || interaction.deferred) {
-			    await interaction.followUp({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+			    await interaction.followUp(reply);
 		    } else {
-			    await interaction.reply({ content: 'There was an error while executing this command!', flags: MessageFlags.Ephemeral });
+			    await interaction.reply(reply);
 		    }
         }
     }

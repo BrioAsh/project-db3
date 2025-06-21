@@ -3,10 +3,23 @@ const { Client, Collection, GatewayIntentBits } = require('discord.js');
 const fs = require('node:fs');
 const path = require('node:path');
 const dotenv = require('dotenv');
+const Database = require('./database');
 
 dotenv.config();
 
-const client = new Client({ intents: [ GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.GuildPresences, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMembers ] });
+const client = new Client({ 
+    intents: [ 
+        GatewayIntentBits.Guilds, 
+        GatewayIntentBits.GuildMessages, 
+        GatewayIntentBits.GuildPresences, 
+        GatewayIntentBits.MessageContent, 
+        GatewayIntentBits.GuildMembers 
+    ] 
+});
+
+// Initialiser la base de données
+client.database = new Database();
+
 // Gestion des commandes
 client.commands = new Collection();
 const folderPath = path.join(__dirname, './commands');
@@ -26,6 +39,7 @@ for (const folder of commandsFolders) {
         }
     }
 }
+
 // Gestion des évènements
 const eventsPath = path.join(__dirname, 'events');
 const eventFiles = fs.readdirSync(eventsPath).filter(file => file.endsWith('.js'));
@@ -39,5 +53,18 @@ for (const file of eventFiles) {
 		client.on(event.name, (...args) => event.execute(...args));
 	}
 }
+
+// Gestion de la fermeture propre
+process.on('SIGINT', async () => {
+    console.log('\n🔄 Arrêt du bot en cours...');
+    await client.database.close();
+    process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+    console.log('\n🔄 Arrêt du bot en cours...');
+    await client.database.close();
+    process.exit(0);
+});
 
 client.login(process.env.DISCORD_TOKEN);
