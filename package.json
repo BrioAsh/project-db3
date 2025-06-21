@@ -1,0 +1,16 @@
+{
+  "dependencies": {
+    "discord.js": "^14.20.0"
+  },
+  "name": "project-db3",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "start": "index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": ""
+}
