@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, MessageFlags } = require('discord.js');
+const wait = require('node:timers/promises').setTimeout;
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -28,6 +29,7 @@ module.exports = {
 			newCommand.filePath = command.filePath;
 	        
 			await interaction.reply(`Command \`${newCommand.data.name}\` was reloaded!`);
+			await wait(15000), interaction.deleteReply();
         } catch (error) {
 	        console.error(error);
 	        await interaction.reply(`There was an error while reloading a command \`${command.data.name}\`:\n\`${error.message}\``);
