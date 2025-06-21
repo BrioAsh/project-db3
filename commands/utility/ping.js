@@ -1,4 +1,5 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
+const wait = require('node:timers/promises').setTimeout;
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -21,5 +22,7 @@ module.exports = {
            .setThumbnail( interaction.client.user.displayAvatarURL())
            .setFooter({ text: `Utilisé par ${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL() });
         await interaction.editReply( {content:"", embeds: [embed]}  );
+        await wait(25000), interaction.deleteReply();
+        
     },
 };

@@ -1,4 +1,4 @@
-const { SlashCommandBuilder } = require('discord.js');
+const { SlashCommandBuilder, MessageFlags } = require('discord.js');
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -16,12 +16,18 @@ module.exports = {
             return interaction.reply(`The command \`${commandName}\` does not exist.`);
         }
 
-		delete require.cache[require.resolve(`./${command.data.name}.js`)];
+		if (!command.filePath) {
+			return interaction.reply({ content: `Impossible de recharger la commande \`${commandName}\` car il n'a pas de chemin de fichier.`, flags: MessageFlags.Ephemeral });
+		}
+
+		delete require.cache[require.resolve(command.filePath)];
 
         try {
-	        const newCommand = require(`./${command.data.name}.js`);
+	        const newCommand = require(command.filePath);
 	        interaction.client.commands.set(newCommand.data.name, newCommand);
-	        await interaction.reply(`Command \`${newCommand.data.name}\` was reloaded!`);
+			newCommand.filePath = command.filePath;
+	        
+			await interaction.reply(`Command \`${newCommand.data.name}\` was reloaded!`);
         } catch (error) {
 	        console.error(error);
 	        await interaction.reply(`There was an error while reloading a command \`${command.data.name}\`:\n\`${error.message}\``);
