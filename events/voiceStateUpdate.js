@@ -11,10 +11,6 @@ module.exports = {
     if (newState.member.user.bot) return;
 
     try {
-      // Vérifier si le système de niveau est activé pour ce serveur
-      const guildConfig = await database.getGuildConfig(guildId);
-      if (guildConfig && !guildConfig.level_up_messages) return;
-
       // Utilisateur rejoint un canal vocal
       if (!oldState.channel && newState.channel) {
         console.log(
@@ -22,7 +18,7 @@ module.exports = {
         );
 
         // Démarrer le suivi du temps vocal
-        await database.startVoiceSession(userId, guildId);
+        await database.startVoiceSession(userId, guildId, newState.channel.id);
       }
       // Utilisateur quitte un canal vocal
       else if (oldState.channel && !newState.channel) {
@@ -34,6 +30,17 @@ module.exports = {
         const result = await database.endVoiceSession(userId, guildId);
 
         if (result && result.xpGained > 0) {
+          // Vérifier la configuration du serveur APRÈS avoir gagné l'XP
+          const guildConfig = await database.getGuildConfig(guildId);
+
+          // Si les messages de level up sont désactivés, on n'affiche rien mais on donne quand même l'XP
+          if (guildConfig && guildConfig.level_up_messages === false) {
+            console.log(
+              `XP vocal gagné silencieusement pour ${newState.member.user.username}: ${result.xpGained} XP`
+            );
+            return;
+          }
+
           // Envoyer un message dans le canal général ou un canal spécifique
           const channel = newState.guild.channels.cache.find(
             (c) =>
@@ -136,6 +143,7 @@ module.exports = {
               }, 20000);
 
               // Récompense en pièces pour le level up (optionnel)
+              const guildConfig = await database.getGuildConfig(guildId);
               if (guildConfig?.economy_enabled) {
                 const coinReward = result.newLevel * 75; // 75 pièces par niveau (plus que les messages)
                 await database.addCoins(
@@ -147,6 +155,10 @@ module.exports = {
               }
             }
           }
+        } else {
+          console.log(
+            `Aucun XP vocal gagné pour ${newState.member.user.username} (temps insuffisant ou autre)`
+          );
         }
       }
       // Utilisateur change de canal vocal
